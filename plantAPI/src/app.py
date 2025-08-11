@@ -13,10 +13,9 @@ MODEL_DIR = "../models"
 MODEL_PATH = os.path.join(MODEL_DIR, "plant_classifier.keras")
 CLASS_NAMES_PATH = os.path.join(MODEL_DIR, "class_names.json")
 
-# Load model at startup
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# Load class names dynamically
+#load class names 
 with open(CLASS_NAMES_PATH, "r") as f:
     CLASS_NAMES = json.load(f)
 
@@ -30,19 +29,16 @@ def root():
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
-        # Read and convert to RGB (ensure 3 channels)
+    
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
 
-        # Resize to match model input shape (excluding batch dimension)
         input_height, input_width = model.input_shape[1], model.input_shape[2]
         image = image.resize((input_width, input_height))
 
-        # Normalize and add batch dimension
         img_array = np.array(image, dtype=np.float32) / 255.0
         img_array = np.expand_dims(img_array, axis=0)  # shape: (1, H, W, 3)
 
-        # Predict
         predictions = model.predict(img_array)
         predicted_class = CLASS_NAMES[np.argmax(predictions)]
         confidence = float(np.max(predictions))
