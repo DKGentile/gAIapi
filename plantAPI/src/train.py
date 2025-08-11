@@ -2,10 +2,10 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import json
 
-# Load PlantVillage dataset
+#only using PlantVillage dataset rn
 dataset, info = tfds.load(
     "plant_village",
-    split=["train[:80%]", "train[80%:]"],  # 80% train, 20% test
+    split=["train[:80%]", "train[80%:]"],
     as_supervised=True,
     with_info=True
 )
@@ -13,8 +13,8 @@ dataset, info = tfds.load(
 train_ds, test_ds = dataset
 num_classes = info.features["label"].num_classes
 
-# Normalize and batch data
-IMG_SIZE = (128, 128)  # smaller for faster training
+#normalize and batch data
+IMG_SIZE = (128, 128) 
 
 def format_image(image, label):
     image = tf.image.resize(image, IMG_SIZE)
@@ -42,18 +42,18 @@ model.compile(
 
 history = model.fit(train_ds, validation_data=test_ds, epochs=5)
 
-# Get class names from dataset info
+#saving class IDs
 class_names = info.features["label"].names
 
-# Save model
+#saving model
 model.save("../models/plant_classifier.keras")
 model.export("../models/plant_classifier")
 
-# Save class names alongside model
+#exporting class names (for API use)
 import json
 with open("../models/class_names.json", "w") as f:
     json.dump(class_names, f)
 
-print("Saved Classes:", class_names)
+print("Saved Classes: ", class_names)
 
 
